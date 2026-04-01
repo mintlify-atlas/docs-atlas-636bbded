@@ -1,0 +1,90 @@
+---
+title: "File task"
+description: "Serve a single local file over HTTP with the correct MIME type and optional gzip compression."
+---
+
+A file task publishes one specific file on your machine as an HTTP resource. Anyone with the URL can download or view the file in their browser. WebPublish automatically detects the correct MIME type from the file extension and serves the content with optional gzip compression.
+
+## How it works
+
+All requests to `http://127.0.0.1:9090/{taskId}/` (regardless of sub-path) are resolved to the single configured file. The response includes the correct `Content-Type` header based on the file extension, and optionally a `Content-Encoding: gzip` or `Content-Encoding: deflate` header if the client supports compression.
+
+## URL format
+
+```
+http://127.0.0.1:9090/{taskId}/{filename}
+```
+
+The `{filename}` portion is the bare name of the file (no directory path). For example, if the task ID is `report` and the file is `annual-report-2025.pdf`:
+
+```
+http://127.0.0.1:9090/report/annual-report-2025.pdf
+```
+
+<Note>
+  All requests to a file task — regardless of the path after the task ID — resolve to the same configured file. The filename in the URL is informational; it does not change which file is returned.
+</Note>
+
+## Creating a file task
+
+<Steps>
+  <Step title="Open the new task dialog">
+    Click **Add** (or **+**) in the toolbar.
+  </Step>
+  <Step title="Select the File type">
+    In the **Type** field, choose **File**.
+  </Step>
+  <Step title="Choose the file">
+    Click **Browse** next to the **Path** field and select the file you want to serve.
+  </Step>
+  <Step title="Set the task ID and name">
+    Enter a short **ID** for the URL (for example, `data`). The file will be accessible at `http://127.0.0.1:9090/data/{filename}`.
+
+    Enter a **Name** to identify the task in the list.
+  </Step>
+  <Step title="Configure options (optional)">
+    - **Gzip** — leave enabled to compress text-based files (HTML, JSON, CSV, etc.). Disable for binary or already-compressed files.
+    - **Data limit** — set a byte cap to restrict the total data served.
+  </Step>
+  <Step title="Save and start">
+    Click **OK** to save the task, then click the **Start** toggle to enable it.
+  </Step>
+</Steps>
+
+## Gzip compression
+
+When gzip is enabled, WebPublish checks the client's `Accept-Encoding` header and compresses the response accordingly:
+
+- If the client accepts `gzip`, the response is gzip-compressed.
+- If the client accepts `deflate` (but not gzip), deflate compression is used.
+- If the client does not advertise compression support, the file is sent uncompressed.
+
+The `Content-Encoding` header is set appropriately so the client can decompress automatically.
+
+<Tip>
+  Disable gzip for files that are already compressed — for example, `.zip`, `.gz`, `.mp4`, `.jpg`, or `.png`. Compressing these file types again wastes CPU time and may slightly increase the response size.
+</Tip>
+
+## MIME type detection
+
+WebPublish maps the file extension to the appropriate `Content-Type` header. Common examples:
+
+| Extension | Content-Type |
+|-----------|-------------|
+| `.html`   | `text/html` |
+| `.json`   | `application/json` |
+| `.geojson`| `application/json` |
+| `.pdf`    | `application/pdf` |
+| `.png`    | `image/png` |
+| `.js`     | `application/javascript` |
+| `.csv`    | `text/csv` |
+
+## If the file is deleted or moved
+
+A file task checks whether the file exists at startup and whenever the task is enabled. If the file is not accessible, the task is automatically disabled and will not serve requests.
+
+If you move or rename the source file, edit the task and update the **Path** to point to the new location, then re-enable the task.
+
+<Warning>
+  There is no automatic file-watching. If the file is deleted while the task is running, in-flight requests may still complete, but new requests will fail with a 500 error until the task is disabled or the file is restored.
+</Warning>

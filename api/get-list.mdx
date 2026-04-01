@@ -1,0 +1,98 @@
+---
+title: "GET /getList"
+description: "Return all current publishing tasks with their live URLs."
+---
+
+Returns the full list of tasks currently loaded in WebPublish. Each task includes its configuration and a pre-built URL you can use to access the published content.
+
+## Request
+
+```bash
+GET http://127.0.0.1:12110/getList
+```
+
+No parameters required.
+
+### Example
+
+```bash
+curl http://127.0.0.1:12110/getList
+```
+
+## Response
+
+Returns a JSON object with a `taskList` array.
+
+<ResponseField name="taskList" type="array">
+  Array of task objects currently loaded in WebPublish.
+
+  <Expandable title="Task object properties">
+    <ResponseField name="gid" type="string">
+      Internal UUID that uniquely identifies the task across sessions.
+    </ResponseField>
+    <ResponseField name="id" type="string">
+      The sub-path ID used in task URLs. Access published content at `http://host:port/{id}/...`.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Display name of the task as shown in the WebPublish UI.
+    </ResponseField>
+    <ResponseField name="path" type="string">
+      The local file system path (for file, directory, mbtiles, clt tasks) or remote target URL (for proxy tasks).
+    </ResponseField>
+    <ResponseField name="enable" type="boolean">
+      Whether the task is currently active and serving requests.
+    </ResponseField>
+    <ResponseField name="gzip" type="boolean">
+      Whether gzip compression is enabled for this task.
+    </ResponseField>
+    <ResponseField name="type" type="string">
+      Task type. One of: `file`, `directory`, `mbtiles`, `proxy`, `clt`.
+    </ResponseField>
+    <ResponseField name="useData" type="number">
+      Total bytes (or request count for mbtiles/proxy) transferred by this task since it was started.
+    </ResponseField>
+    <ResponseField name="limitData" type="number">
+      Data cap for this task. `0` means unlimited.
+    </ResponseField>
+    <ResponseField name="url" type="string">
+      The computed access URL for the task, e.g. `http://127.0.0.1:9090/{id}/filename.ext`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example response
+
+```json
+{
+  "taskList": [
+    {
+      "gid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "id": "my-site",
+      "name": "My Static Site",
+      "path": "/home/user/sites/my-site",
+      "enable": true,
+      "gzip": true,
+      "type": "directory",
+      "useData": 204800,
+      "limitData": 0,
+      "url": "http://127.0.0.1:9090/my-site/"
+    },
+    {
+      "gid": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "id": "tiles",
+      "name": "World Basemap",
+      "path": "/home/user/maps/world.mbtiles",
+      "enable": true,
+      "gzip": true,
+      "type": "mbtiles",
+      "useData": 512,
+      "limitData": 0,
+      "url": "http://127.0.0.1:9090/tiles/{z}/{x}/{y}.png"
+    }
+  ]
+}
+```
+
+<Note>
+  The `url` field in each task is computed using the main server's host and port, not the API port. Ensure the main server is running for task URLs to be accessible.
+</Note>

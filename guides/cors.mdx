@@ -1,0 +1,74 @@
+---
+title: "CORS"
+description: "How WebPublish handles Cross-Origin Resource Sharing so any web page can fetch resources from the local server."
+---
+
+Cross-Origin Resource Sharing (CORS) is a browser security mechanism that controls which web pages can read responses from a different origin. Without the right CORS headers, a browser blocks a JavaScript request to `http://127.0.0.1:9090` if the page making the request is hosted on a different domain.
+
+WebPublish sets permissive CORS headers on every response so that any web page — including pages served from the internet — can fetch resources from your local WebPublish server.
+
+## Headers set on every response
+
+WebPublish adds the following headers to all HTTP responses:
+
+```http
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Private-Network: true
+Access-Control-Request-Private-Network: true
+Access-Control-Allow-Methods: PUT,POST,GET,DELETE,OPTIONS
+```
+
+### What each header does
+
+| Header | Value | Effect |
+|---|---|---|
+| `Access-Control-Allow-Origin` | `*` | Any origin may read the response |
+| `Access-Control-Allow-Methods` | `PUT,POST,GET,DELETE,OPTIONS` | All common HTTP methods are permitted |
+| `Access-Control-Allow-Private-Network` | `true` | Enables Chrome's Private Network Access — allows pages served from the public internet to access `localhost` resources |
+| `Access-Control-Request-Private-Network` | `true` | Acknowledges private-network preflight requests |
+
+## No configuration required
+
+CORS is always on. There is no setting to enable or disable it, and it cannot be restricted per task. Every response from WebPublish includes the headers above.
+
+## Private Network Access
+
+`Access-Control-Allow-Private-Network: true` is required for Chrome (and Chromium-based browsers) to allow a page hosted at a public URL to make requests to `http://localhost` or `http://127.0.0.1`. Without this header, Chrome blocks the request as a private network access violation.
+
+This matters in a common workflow: you run a web application on a remote server or CDN, and you want it to load local tile data or static assets from WebPublish on your development machine.
+
+<Note>
+  Private Network Access checks are enforced by the browser, not by WebPublish. The headers only take effect when the browser enforces them. Firefox does not currently enforce Private Network Access in the same way.
+</Note>
+
+## Common use case: accessing local tiles from a mapping app
+
+Suppose you are building a web mapping application hosted at `https://app.example.com`. You want to load tile data from a local MBTiles task during development without publishing the data to a remote server.
+
+Because WebPublish always sends `Access-Control-Allow-Origin: *` and `Access-Control-Allow-Private-Network: true`, the browser permits the cross-origin request:
+
+```javascript
+// Runs on https://app.example.com — fetches tiles from local WebPublish
+map.addSource('local-tiles', {
+  type: 'raster',
+  tiles: ['http://127.0.0.1:9090/basemap/{z}/{x}/{y}.png'],
+  tileSize: 256
+});
+```
+
+No proxy, no configuration, no CORS workaround needed.
+
+<Tip>
+  WebPublish listens on `127.0.0.1` by default. If you need it to be accessible from other devices on the same network, change the listen address in **Settings → Server**. Note that private-network CORS rules still apply when the address is a LAN IP.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Server configuration" icon="server" href="/configuration/server">
+    Change the port and listen address
+  </Card>
+  <Card title="MBTiles task" icon="map" href="/tasks/mbtiles">
+    Serve local tile data over HTTP
+  </Card>
+</CardGroup>

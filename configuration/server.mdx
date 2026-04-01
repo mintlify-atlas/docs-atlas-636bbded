@@ -1,0 +1,110 @@
+---
+title: "Server configuration"
+description: "Configure the port and IP address that WebPublish listens on, and understand how these settings affect task URLs."
+---
+
+WebPublish runs a single HTTP server that handles every publishing task. Two settings control where that server listens: the **port** and the **address** (IP binding). Both can be changed in **Settings → Basic**.
+
+## Port
+
+| Setting | Config key | Default |
+|---------|-----------|---------|
+| **Port** | `port` | `9090` |
+
+The port determines the TCP port number the server binds to. All task URLs include this port:
+
+```
+http://{address}:{port}/{taskId}/...
+```
+
+For example, with the default settings a directory task with the ID `my-site` is accessible at:
+
+```
+http://127.0.0.1:9090/my-site/
+```
+
+Changing the port updates every task URL immediately after the server restarts.
+
+<Note>
+  Port numbers below 1024 are reserved on most operating systems and require elevated privileges. Use a port in the range 1024–65535.
+</Note>
+
+### Port conflicts
+
+If the selected port is already in use by another process, WebPublish fails to start the server and displays an error. To resolve this:
+
+1. Stop the process currently occupying the port, or
+2. Change the WebPublish port to a free port number in **Settings → Basic**.
+
+## Address
+
+| Setting | Config key | Default |
+|---------|-----------|---------|
+| **Address** | `address` | `127.0.0.1` |
+
+The address controls which network interface the server binds to.
+
+| Value | Effect |
+|-------|--------|
+| `127.0.0.1` | Localhost only. Only the machine running WebPublish can access the server. |
+| LAN IP (e.g. `192.168.1.10`) | Accessible to other devices on the same local network. |
+| `0.0.0.0` | Binds to all interfaces. Accessible from any network interface, including public ones. |
+
+<Warning>
+  Binding to `0.0.0.0` or a public IP address exposes all of your publishing tasks to every network the machine is connected to. Anyone who can reach that IP and port can access your files. Only do this on networks you trust, and ensure your firewall is configured appropriately.
+</Warning>
+
+### Allow LAN access
+
+To share content with other devices on your local network:
+
+<Steps>
+  <Step title="Find your LAN IP address">
+    On Windows, run `ipconfig` in a command prompt and look for the **IPv4 Address** under your network adapter. On Linux, run `ip addr` and look for `inet` on your active interface.
+  </Step>
+  <Step title="Open WebPublish settings">
+    Click the gear icon in the toolbar, or right-click the system-tray icon and choose **Settings**.
+  </Step>
+  <Step title="Update the address">
+    In **Settings → Basic**, replace `127.0.0.1` in the **Address** field with your machine's LAN IP address (for example, `192.168.1.10`).
+  </Step>
+  <Step title="Restart the server">
+    Click **OK** to save. WebPublish restarts the HTTP server and all task URLs update to reflect the new address.
+  </Step>
+  <Step title="Verify access from another device">
+    On another device on the same network, open a browser and navigate to a task URL, for example:
+
+    ```
+    http://192.168.1.10:9090/my-site/
+    ```
+  </Step>
+</Steps>
+
+## How task URLs are constructed
+
+Every task URL follows this pattern:
+
+```
+http://{address}:{port}/{taskId}/...
+```
+
+- `{address}` — the configured IP binding
+- `{port}` — the configured port number
+- `{taskId}` — the unique ID you assigned when creating the task
+
+All tasks share the same server, port, and address. Tasks are differentiated only by their ID prefix in the URL path.
+
+<Tip>
+  Choose task IDs that are short, lowercase, and URL-safe (letters, numbers, and hyphens). Avoid spaces or special characters.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Settings" icon="gear" href="/configuration/settings">
+    All application settings and their default values
+  </Card>
+  <Card title="REST API configuration" icon="code" href="/configuration/api">
+    Enable and configure the built-in REST API
+  </Card>
+</CardGroup>

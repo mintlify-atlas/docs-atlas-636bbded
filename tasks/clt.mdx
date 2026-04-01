@@ -1,0 +1,97 @@
+---
+title: "CLT task"
+description: "Serve CesiumLab .clt tile packages — a SQLite-based tileset format used by CesiumLab tools."
+---
+
+A CLT task serves `.clt` tile packages produced by [CesiumLab](https://www.cesiumlab.com/). The `.clt` format is a SQLite database where each tile is stored as a binary blob keyed by its path. WebPublish opens the database and exposes a tile endpoint that CesiumLab and compatible clients can consume directly.
+
+## How it works
+
+When a request arrives at `http://127.0.0.1:9090/{taskId}/{tilepath}`, WebPublish looks up the value of `{tilepath}` in the SQLite `tiles` table and returns the stored tile data. The query used is:
+
+```sql
+SELECT tile, type FROM tiles WHERE path = '{tilepath}'
+```
+
+Tiles typed as `json` are returned with a `application/json` content type. All other tiles are returned as `application/octet-stream`. Tiles stored with gzip encoding are forwarded with a `Content-Encoding: gzip` header.
+
+If no tile is found for the requested path, WebPublish returns a `404` response.
+
+## Endpoint
+
+```
+http://127.0.0.1:9090/{taskId}/{tilepath}
+```
+
+The `{tilepath}` corresponds to the `path` column in the `tiles` table of the `.clt` file.
+
+**Example:**
+
+```
+http://127.0.0.1:9090/myterrain/tileset.json
+http://127.0.0.1:9090/myterrain/0/0/0.terrain
+```
+
+The tileset entry point (for most CesiumLab packages) is `tileset.json`:
+
+```
+http://127.0.0.1:9090/{taskId}/tileset.json
+```
+
+## Creating a CLT task
+
+<Steps>
+  <Step title="Open the new task dialog">
+    Click **Add** (or **+**) in the toolbar.
+  </Step>
+  <Step title="Select the CLT type">
+    In the **Type** field, choose **CLT**.
+  </Step>
+  <Step title="Choose the .clt file">
+    Click **Browse** next to the **Path** field and select the `.clt` file on your machine.
+
+    <Note>
+      The `.clt` file must be a valid SQLite database with a `tiles` table containing `path`, `tile`, and `type` columns. Files exported directly from CesiumLab meet this requirement.
+    </Note>
+  </Step>
+  <Step title="Set the task ID and name">
+    Enter a short **ID** (for example, `terrain`). The tileset will be accessible at:
+
+    ```
+    http://127.0.0.1:9090/terrain/tileset.json
+    ```
+  </Step>
+  <Step title="Save and start">
+    Click **OK** to save the task, then click **Start** to enable it.
+  </Step>
+</Steps>
+
+## Loading the tileset in CesiumLab
+
+To view the published tileset in a CesiumLab viewer, use the local WebPublish URL as the tileset source.
+
+In a CesiumJS application, add the tileset using the URL of the `tileset.json` endpoint:
+
+```javascript
+const tileset = await Cesium.Cesium3DTileset.fromUrl(
+  'http://127.0.0.1:9090/{taskId}/tileset.json'
+);
+viewer.scene.primitives.add(tileset);
+viewer.zoomTo(tileset);
+```
+
+Replace `{taskId}` with the ID you assigned when creating the task.
+
+<Tip>
+  If you are loading the tileset in a browser-based CesiumJS application served from a different origin, the proxy task is an alternative approach for adding CORS headers to your tileset responses. See the [Proxy task](/tasks/proxy) for details.
+</Tip>
+
+## Gzip compression
+
+Tiles in `.clt` packages are typically stored in gzip-compressed form. WebPublish passes gzip-compressed tiles through to the client with a `Content-Encoding: gzip` header, provided the client's `Accept-Encoding` header includes `gzip`. Clients that do not advertise gzip support receive decompressed tile data.
+
+## Notes
+
+- The task is automatically disabled if the `.clt` file cannot be opened. Update the **Path** in the task settings and re-enable the task if you move or replace the file.
+- The CLT task does not currently support an interactive map preview. Use CesiumLab or a CesiumJS application to visualize the data.
+- Each incoming tile request increments the task's **Data used** counter by one request. Use the **Data limit** field to cap the total number of requests served.

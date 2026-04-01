@@ -1,0 +1,94 @@
+---
+title: "Map preview"
+description: "Open an interactive map preview for any MBTiles task to inspect your tile data in the browser."
+---
+
+Every MBTiles task exposes a `/map-preview` endpoint that opens an interactive web map centred on your dataset. The preview is useful for quickly checking that tiles are being served correctly, verifying the coverage area, and inspecting vector layer data.
+
+## Opening the preview
+
+The map preview URL follows this pattern:
+
+```
+http://127.0.0.1:9090/{taskId}/map-preview
+```
+
+Replace `{taskId}` with the ID you gave the task when you created it. For example, if the task ID is `streets`, the URL is:
+
+```
+http://127.0.0.1:9090/streets/map-preview
+```
+
+You can open this URL in any browser. You can also find a **Preview** link directly in the WebPublish task list — click the task and look for the map icon or preview button.
+
+## What the preview shows
+
+The map loads centred on the dataset's geographic center with the zoom level stored in the MBTiles metadata. As you navigate the map, the current zoom level is displayed in the viewer so you can check which zoom levels have tile coverage.
+
+The initial view is derived from the `center` field in the TileJSON metadata:
+
+```json
+"center": [116.39, 39.91, 8]
+```
+
+The three values are `[longitude, latitude, zoom]`. If the MBTiles file does not contain center metadata, WebPublish falls back to a default world view.
+
+## Raster and vector rendering
+
+WebPublish automatically selects the correct rendering mode based on the tile format stored in the MBTiles file.
+
+| Tile format | Rendering mode |
+|---|---|
+| PNG (raster) | Raster rendering — tiles are displayed as images |
+| PBF (vector) | Vector rendering — tiles are rendered as styled vector features |
+
+You do not need to configure this manually. WebPublish reads the format from the MBTiles metadata and passes `is_vector: true` to the map template when the format is `pbf`.
+
+## Switching the map engine
+
+WebPublish supports two map rendering engines for the preview:
+
+<CardGroup cols={2}>
+  <Card title="MapBox GL JS" icon="map">
+    The default engine. Renders both raster and vector tiles. Provides smooth zoom transitions and supports Mapbox style specifications.
+  </Card>
+  <Card title="OpenLayers" icon="layer-group">
+    An open-source alternative. Useful if you prefer not to depend on Mapbox, or if you need OpenLayers-specific rendering behavior.
+  </Card>
+</CardGroup>
+
+To switch engines:
+
+<Steps>
+  <Step title="Open Settings">
+    Click **Settings** in the toolbar or system-tray menu.
+  </Step>
+  <Step title="Go to View settings">
+    Find the **Map Engine** option under the **Interface** section.
+  </Step>
+  <Step title="Select an engine">
+    Choose **MapBox** or **OpenLayers** from the dropdown.
+  </Step>
+  <Step title="Reload the preview">
+    Refresh the `/map-preview` page in your browser. The selected engine takes effect immediately — no restart is needed.
+  </Step>
+</Steps>
+
+<Note>
+  The map engine setting is global and applies to all MBTiles task previews. It only affects the visual preview — it does not change how tiles are served to external clients.
+</Note>
+
+<Tip>
+  If your vector tile dataset does not render as expected with one engine, try switching to the other. Mapbox GL JS and OpenLayers handle certain vector tile edge cases differently.
+</Tip>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="MBTiles task" icon="database" href="/tasks/mbtiles">
+    Full reference for the MBTiles task type, including all endpoints
+  </Card>
+  <Card title="Settings" icon="gear" href="/configuration/settings">
+    Reference for all settings including the map engine option
+  </Card>
+</CardGroup>

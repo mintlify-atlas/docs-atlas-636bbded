@@ -1,0 +1,52 @@
+---
+title: "Language and localization"
+description: "Switch WebPublish to a different language and understand the supported locales."
+---
+
+WebPublish ships with built-in support for three languages. The interface — including menus, dialogs, task labels, and notifications — is fully translated in each locale.
+
+## Supported languages
+
+| Language | Locale code |
+|---|---|
+| English | `en-US` |
+| Simplified Chinese | `zh-CN` |
+| Traditional Chinese | `zh-TW` |
+
+## Changing the language
+
+<Steps>
+  <Step title="Open Settings">
+    Click **Settings** in the toolbar or system-tray menu.
+  </Step>
+  <Step title="Find the Language setting">
+    Under the **Basic** section, locate the **Language** dropdown.
+  </Step>
+  <Step title="Select a language">
+    Choose **English**, **简体中文**, or **繁體中文** from the list.
+  </Step>
+  <Step title="Save">
+    Click **Save & Apply**. WebPublish will restart to apply the language change.
+  </Step>
+</Steps>
+
+<Note>
+  WebPublish must restart for the language change to take effect. Your tasks and settings are preserved — only the UI language changes.
+</Note>
+
+## Default language
+
+If you have not set a language manually, WebPublish defaults to the system locale. If your system locale is not one of the supported locales listed above, the interface falls back to English (`en-US`).
+
+The active locale is stored in the configuration file under the `locale` key.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Settings" icon="gear" href="/configuration/settings">
+    Full reference for all user-facing settings
+  </Card>
+  <Card title="Auto-launch" icon="zap" href="/guides/auto-launch">
+    Start WebPublish automatically when your OS starts up
+  </Card>
+</CardGroup>

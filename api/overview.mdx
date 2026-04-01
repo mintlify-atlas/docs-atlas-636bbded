@@ -1,0 +1,74 @@
+---
+title: "REST API Overview"
+description: "Programmatically manage WebPublish tasks with the built-in REST API."
+---
+
+WebPublish includes an optional REST API that lets you list and manage publishing tasks from external scripts or tools. The API is disabled by default and must be turned on in Settings before use.
+
+<Note>
+  The REST API has no authentication. Only enable it on trusted networks and disable it when not in use.
+</Note>
+
+## Enabling the API
+
+<Steps>
+  <Step title="Open Settings">
+    Click the settings icon in the WebPublish sidebar to open the Settings panel.
+  </Step>
+  <Step title="Enable the API">
+    Toggle **API Enabled** to on. The API server will start immediately.
+  </Step>
+  <Step title="Set the API port">
+    The default port is `12110`. Change it if there is a conflict, then restart the API server.
+  </Step>
+</Steps>
+
+See [API Configuration](/configuration/api) for full details.
+
+## Base URL
+
+```
+http://127.0.0.1:12110
+```
+
+Replace `12110` with your configured `api-port` if you changed it.
+
+## Available endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/getList` | Return all current publishing tasks |
+| GET | `/addTask` | Add a new task from a local file path |
+
+## Response format
+
+All responses use `Content-Type: text/json;charset=UTF-8`. Successful responses return a JSON object. Unrecognised paths return the plain text string `error`.
+
+## CORS
+
+The API sets permissive CORS headers on every response:
+
+| Header | Value |
+|--------|-------|
+| `Access-Control-Allow-Origin` | `*` |
+| `Access-Control-Allow-Methods` | `PUT,POST,GET,DELETE,OPTIONS` |
+| `Access-Control-Allow-Headers` | `*` |
+| `Access-Control-Allow-Private-Network` | `true` |
+
+This means any web page — including those served from localhost on a different port — can call the API directly.
+
+## Error handling
+
+| Scenario | Response |
+|----------|----------|
+| Unknown path | `200 OK` with body `error` |
+| Invalid file path in `/addTask` | `404` with error message |
+
+<CardGroup cols={2}>
+  <Card title="GET /getList" icon="list" href="/api/get-list">
+    Retrieve all active publishing tasks
+  </Card>
+  <Card title="GET /addTask" icon="plus" href="/api/add-task">
+    Add a new task from a local path
+  </Card>
+</CardGroup>

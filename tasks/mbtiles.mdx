@@ -1,0 +1,184 @@
+---
+title: "MBTiles task"
+description: "Host an MBTiles tile dataset as a full tile server with TileJSON metadata and an interactive map preview."
+---
+
+An MBTiles task turns a local `.mbtiles` file into a running tile server. WebPublish reads tile data and metadata directly from the file and exposes it over HTTP. Both raster (PNG) and vector (PBF) tile formats are supported.
+
+## How it works
+
+WebPublish opens the MBTiles file (a SQLite database), reads its metadata table, and builds a TileJSON descriptor. It then registers REST endpoints for tile requests, metadata, and an interactive map preview — all under the task's base URL.
+
+Zoom-level constraints (`minzoom` / `maxzoom`) are enforced: tile requests outside the valid range return a 404 response.
+
+## Supported tile formats
+
+| Format | Type | Description |
+|--------|------|-------------|
+| PNG | Raster | Standard raster tiles; served with `image/png` content type |
+| PBF | Vector | Mapbox Vector Tiles (MVT); served with `application/x-protobuf` |
+| GeoJSON | Vector (derived) | Converts a PBF tile to GeoJSON on-the-fly; served with `application/json` |
+
+## Endpoints
+
+All endpoints are prefixed with the task ID.
+
+### Tile endpoint
+
+```
+http://127.0.0.1:9090/{taskId}/{z}/{x}/{y}.{format}
+```
+
+Request a tile at zoom level `{z}`, column `{x}`, and row `{y}`. The `{format}` must match the tile format stored in the MBTiles file.
+
+**Format values:**
+
+| Value | Returns |
+|-------|---------|
+| `png` | Raster PNG tile |
+| `pbf` | Vector PBF tile (MVT) |
+| `geojson` | GeoJSON converted from a PBF tile |
+
+**Example:**
+
+```
+http://127.0.0.1:9090/basemap/10/512/384.png
+http://127.0.0.1:9090/streets/14/8234/5483.pbf
+http://127.0.0.1:9090/streets/14/8234/5483.geojson
+```
+
+### TileJSON metadata
+
+```
+http://127.0.0.1:9090/{taskId}/metadata.json
+```
+
+Returns a [TileJSON 2.0.0](https://github.com/mapbox/tilejson-spec) document describing the dataset.
+
+**Example response:**
+
+```json
+{
+  "tilejson": "2.0.0",
+  "id": "basemap",
+  "name": "My Basemap",
+  "tilesize": 256,
+  "tileType": "raster",
+  "format": "png",
+  "minzoom": 0,
+  "maxzoom": 14,
+  "center": [116.39, 39.91, 8],
+  "bounds": [73.66, 18.16, 135.05, 53.55],
+  "tiles": [
+    "http://127.0.0.1:9090/basemap/{z}/{x}/{y}.png"
+  ]
+}
+```
+
+The `tileType` field is `"vector"` for PBF datasets and `"raster"` for PNG datasets.
+
+### Map preview
+
+```
+http://127.0.0.1:9090/{taskId}/map-preview
+```
+
+Opens an interactive web map centred on the dataset's bounds. WebPublish renders the map using the configured map engine (MapBox GL JS or OpenLayers). The zoom level and center are derived from the MBTiles metadata.
+
+<Tip>
+  You can switch the map engine between MapBox and OpenLayers in **Settings**. See the [map preview guide](/guides/map-preview) for details.
+</Tip>
+
+## Creating an MBTiles task
+
+<Steps>
+  <Step title="Open the new task dialog">
+    Click **Add** (or **+**) in the toolbar.
+  </Step>
+  <Step title="Select the MBTiles type">
+    In the **Type** field, choose **MBTiles**.
+  </Step>
+  <Step title="Choose the MBTiles file">
+    Click **Browse** next to the **Path** field and select the `.mbtiles` file on your machine.
+  </Step>
+  <Step title="Set the task ID and name">
+    Enter a short **ID** (for example, `basemap`). The tile endpoint will be at:
+
+    ```
+    http://127.0.0.1:9090/basemap/{z}/{x}/{y}.png
+    ```
+  </Step>
+  <Step title="Configure options (optional)">
+    - **Gzip** — leave enabled. Most mapping clients support compressed tile responses.
+    - **Data limit** — useful for controlling bandwidth when sharing a large dataset.
+  </Step>
+  <Step title="Save and start">
+    Click **OK** to save the task, then click **Start** to enable it.
+  </Step>
+</Steps>
+
+## Using tiles in a mapping client
+
+Copy the tile URL template from the TileJSON `tiles` field and use it in your mapping library.
+
+<Tabs>
+  <Tab title="Mapbox GL JS">
+    ```javascript
+    map.addSource('my-tiles', {
+      type: 'raster',
+      tiles: ['http://127.0.0.1:9090/basemap/{z}/{x}/{y}.png'],
+      tileSize: 256
+    });
+
+    map.addLayer({
+      id: 'my-tiles-layer',
+      type: 'raster',
+      source: 'my-tiles'
+    });
+    ```
+  </Tab>
+  <Tab title="Leaflet">
+    ```javascript
+    L.tileLayer('http://127.0.0.1:9090/basemap/{z}/{x}/{y}.png', {
+      minZoom: 0,
+      maxZoom: 14,
+      attribution: 'My tiles'
+    }).addTo(map);
+    ```
+  </Tab>
+  <Tab title="OpenLayers">
+    ```javascript
+    new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        url: 'http://127.0.0.1:9090/basemap/{z}/{x}/{y}.png'
+      })
+    });
+    ```
+  </Tab>
+</Tabs>
+
+For vector tiles, point your client to the TileJSON endpoint:
+
+```
+http://127.0.0.1:9090/{taskId}/metadata.json
+```
+
+## Zoom level constraints
+
+Requests for tiles outside the dataset's `minzoom`–`maxzoom` range, or with coordinates outside the valid tile grid for the requested zoom level, return a `404 Out of bounds` response. This prevents clients from requesting tiles that do not exist.
+
+The valid bounds are determined entirely by the metadata stored in the MBTiles file itself.
+
+## Gzip compression
+
+MBTiles files often store PBF tiles in gzip-compressed form internally. WebPublish handles both cases:
+
+- If the stored tile is already gzip-compressed and the client accepts gzip, WebPublish passes it through unchanged.
+- If the stored tile is not compressed and gzip is enabled for the task, WebPublish compresses it before sending.
+- If the stored tile is compressed but the client does not accept gzip, WebPublish decompresses it before sending.
+
+This means enabling gzip on the task is always safe, regardless of how tiles are stored in the file.
+
+<Note>
+  The task is automatically disabled if the MBTiles file cannot be opened (for example, if it is deleted or moved). Update the **Path** in the task settings and re-enable the task to restore service.
+</Note>

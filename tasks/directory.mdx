@@ -1,0 +1,103 @@
+---
+title: "Directory task"
+description: "Serve an entire local folder over HTTP with an optional browsable directory listing."
+---
+
+A directory task exposes a local folder on your machine as an HTTP resource. Clients can navigate the folder's contents in their browser and download any file inside it. Individual files are served with correct MIME types and optional gzip compression.
+
+## How it works
+
+When a request arrives at `http://127.0.0.1:9090/{taskId}/{path}`, WebPublish resolves `{path}` relative to the configured folder root:
+
+- If the resolved path is a **file**, it is served directly (equivalent to a file task).
+- If the resolved path is a **directory**, WebPublish renders an HTML directory listing, unless the "Disable directory view" option is enabled.
+- If the path does not exist, WebPublish returns a 404 response.
+
+## URL format
+
+```
+http://127.0.0.1:9090/{taskId}/path/to/file
+```
+
+For example, if the task ID is `static` and the folder contains `assets/logo.png`:
+
+```
+http://127.0.0.1:9090/static/assets/logo.png
+```
+
+To browse the root of the folder:
+
+```
+http://127.0.0.1:9090/static/
+```
+
+## Creating a directory task
+
+<Steps>
+  <Step title="Open the new task dialog">
+    Click **Add** (or **+**) in the toolbar.
+  </Step>
+  <Step title="Select the Directory type">
+    In the **Type** field, choose **Directory**.
+  </Step>
+  <Step title="Choose the folder">
+    Click **Browse** next to the **Path** field and select the local folder you want to serve.
+  </Step>
+  <Step title="Set the task ID and name">
+    Enter a short **ID** for the URL (for example, `docs`). The folder will be reachable at `http://127.0.0.1:9090/docs/`.
+
+    Enter a **Name** to help you identify the task in the list.
+  </Step>
+  <Step title="Configure options (optional)">
+    - **Gzip** — leave enabled to compress text-based files. Disable for folders that already contain compressed assets.
+    - **Disable directory view** — check this option to prevent clients from seeing folder listings. Requests that resolve to a directory will receive a plain text error instead of an HTML listing.
+    - **Data limit** — set a byte cap if you want to restrict total data served by this task.
+  </Step>
+  <Step title="Save and start">
+    Click **OK** to save the task, then click the **Start** toggle to enable it.
+  </Step>
+</Steps>
+
+## Directory view
+
+By default, navigating to a folder path renders an HTML page listing all files and subdirectories. Each entry is a clickable link, so clients can drill down into nested folders.
+
+The directory listing shows the root of the served folder when you visit the bare task URL (for example, `/docs/`). Navigating into subdirectories shows a back link to return to the parent.
+
+### Disabling directory view
+
+If you enable the **Disable directory view** option, requests that resolve to a directory path return the following plain text response instead of an HTML listing:
+
+```
+This Task disenable directory view.
+```
+
+File requests are still served normally. Only directory-level paths are affected.
+
+<Tip>
+  Disable directory view when you want to serve a web application where directory listings would expose the folder structure to clients.
+</Tip>
+
+## Gzip compression
+
+When gzip is enabled, WebPublish compresses the response if the client's `Accept-Encoding` header includes `gzip` or `deflate`. Compression is applied per-request and is transparent to the client.
+
+Disable gzip for folders that contain pre-compressed files (`.gz`, `.zip`, `.mbtiles`) to avoid unnecessary double-compression.
+
+## Special characters in filenames
+
+WebPublish URL-decodes request paths before resolving them against the folder. Filenames that contain spaces, accented characters, or other special characters are handled correctly as long as the client percent-encodes the URL.
+
+For example, a file named `My Report (Final).pdf` would be served at:
+
+```
+http://127.0.0.1:9090/{taskId}/My%20Report%20(Final).pdf
+```
+
+Most browsers and HTTP clients perform this encoding automatically.
+
+## Notes
+
+- The task becomes inactive if the configured folder is deleted or becomes inaccessible. Edit the task and update the **Path** to point to a valid folder to re-enable it.
+- Query strings (for example, `?version=2`) are stripped before the path is resolved against the folder. They do not affect file resolution.
+- Symlinks inside the folder are followed when resolving paths.

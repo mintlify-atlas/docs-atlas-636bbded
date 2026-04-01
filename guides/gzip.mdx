@@ -1,0 +1,79 @@
+---
+title: "Gzip compression"
+description: "How WebPublish compresses responses on the fly, and when to enable or disable gzip per task."
+---
+
+WebPublish can compress HTTP responses using gzip or deflate before sending them to the client. Compression is configured per task — you can enable it for one task and disable it for another depending on the content type.
+
+## How it works
+
+When a client sends an `Accept-Encoding: gzip` header, WebPublish checks the task's gzip setting:
+
+- **Gzip enabled** — the response body is compressed with `zlib.gzipSync` before it is sent. If the client instead advertises `Accept-Encoding: deflate`, `zlib.deflateSync` is used.
+- **Gzip disabled** — the response is sent uncompressed, regardless of what the client accepts.
+
+The `Content-Encoding` response header is set to `gzip` or `deflate` so the client knows to decompress the body.
+
+## Enabling and disabling gzip
+
+Gzip is a **per-task setting**. It defaults to `true` for all task types.
+
+To change it, open the task's edit dialog:
+
+<Steps>
+  <Step title="Open the task settings">
+    Click the task in the publish list, then click **Edit** (or the pencil icon).
+  </Step>
+  <Step title="Toggle gzip">
+    Find the **Gzip** toggle and switch it on or off.
+  </Step>
+  <Step title="Save the task">
+    Click **OK** (or **Save & Apply**). The change takes effect immediately — no server restart is required.
+  </Step>
+</Steps>
+
+## When to enable gzip
+
+Gzip is beneficial for content that compresses well and is not already compressed at the storage level.
+
+| Content type | Recommended setting | Reason |
+|---|---|---|
+| Static HTML, CSS, JS | Enabled | Text compresses well; reduces transfer size significantly |
+| GeoJSON | Enabled | JSON is highly compressible |
+| Large JSON or XML files | Enabled | Reduces bandwidth for large structured data |
+| PNG raster tiles | Disabled | PNG is already losslessly compressed; re-compressing adds CPU cost with negligible size reduction |
+| Video, audio, JPEG images | Disabled | Already compressed; gzip overhead is not worth the marginal gain |
+
+<Tip>
+  When in doubt, leave gzip enabled. WebPublish only compresses when the client advertises support, so enabling gzip never breaks clients that do not understand it.
+</Tip>
+
+## MBTiles vector tiles: special handling
+
+MBTiles files that store vector tiles in PBF format often compress the tile data internally with gzip before writing it to the SQLite database. WebPublish detects this at request time by checking for the gzip magic bytes (`0x1f 0x8b`) at the start of the tile buffer.
+
+The result depends on whether the stored tile is already compressed and whether the client accepts gzip:
+
+| Stored tile | Client accepts gzip | Task gzip setting | What WebPublish sends |
+|---|---|---|---|
+| Already gzip-compressed | Yes | Enabled | Passes the compressed tile through unchanged |
+| Already gzip-compressed | No | Enabled | Decompresses the tile before sending |
+| Not compressed | Yes | Enabled | Compresses the tile before sending |
+| Not compressed | No | Disabled | Sends the tile uncompressed |
+
+This means you can safely leave gzip enabled on MBTiles tasks regardless of how tiles are stored in the file — WebPublish handles passthrough and decompression transparently.
+
+<Note>
+  The gzip passthrough path is the most efficient: if the stored tile is already compressed and the client accepts gzip, no CPU work is done on the tile data at all.
+</Note>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="MBTiles task" icon="map" href="/tasks/mbtiles">
+    Full reference for the MBTiles tile server task type
+  </Card>
+  <Card title="File task" icon="file" href="/tasks/file">
+    Serve individual files with optional gzip compression
+  </Card>
+</CardGroup>

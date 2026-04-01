@@ -1,0 +1,72 @@
+---
+title: "Settings"
+description: "A reference for every user-facing setting in WebPublish and its default value."
+---
+
+WebPublish stores its settings in an [electron-store](https://github.com/sindresorhus/electron-store) database named `ts-webpublish`. Most settings are available through the **Settings** dialog (accessible from the toolbar or system-tray menu); a few are managed automatically by the application.
+
+## General settings
+
+| Setting | Config key | Default | Description |
+|---------|-----------|---------|-------------|
+| **Language** | `locale` | System locale | The UI language. WebPublish supports Simplified Chinese, Traditional Chinese, and English. Changing this setting takes effect after a restart. |
+| **Open at login** | `open-at-login` | `false` | Automatically launch WebPublish when you log in to your operating system. See [Auto-launch guide](/guides/auto-launch) for details. |
+| **Auto-hide window** | `auto-hide-window` | `false` | Hide the main window to the system tray after the application starts. The window can still be opened from the tray icon. |
+| **Keep window state** | `keep-window-state` | `false` | Remember the position and size of the main window between sessions. |
+| **Hide app menu** | `hide-app-menu` | `true` on Windows and Linux | Hide the native application menu bar. Press **Alt** to reveal it temporarily. This setting defaults to `true` on Windows and Linux because the toolbar provides equivalent controls. |
+| **Auto-check update** | `auto-check-update` | `true` | Automatically check for new releases on startup. A notification appears when an update is available. |
+| **User experience** | `user-experience` | `true` | Allow anonymous usage statistics to be collected. Disable this if you prefer not to share telemetry. |
+
+<Note>
+  The `open-at-login` value is kept in sync with the operating system's startup-item registry. If you remove WebPublish from your OS startup manager, WebPublish detects the change and updates this setting automatically.
+</Note>
+
+## View settings
+
+| Setting | Config key | Default | Description |
+|---------|-----------|---------|-------------|
+| **View type** | `view-type` | `false` (list) | Controls how tasks are displayed in the main window. `false` renders a compact **list view**; `true` renders a **card view** with larger tiles. |
+| **Map engine** | `map-engine` | `mapbox` | The map library used to render the interactive MBTiles preview. Choose **MapBox** or **OpenLayers**. |
+
+### Map engine options
+
+The map engine affects only the visual preview shown when you open an MBTiles task — it does not change how tiles are served.
+
+<CardGroup cols={2}>
+  <Card title="MapBox" icon="map">
+    The default engine. Renders both raster and vector tiles using the Mapbox GL JS library.
+  </Card>
+  <Card title="OpenLayers" icon="layer-group">
+    An open-source alternative. Useful if you prefer not to use Mapbox or need OpenLayers-specific behavior.
+  </Card>
+</CardGroup>
+
+<Tip>
+  If your MBTiles file contains vector tiles and the preview does not render correctly with one engine, try switching to the other.
+</Tip>
+
+## Where settings are stored
+
+Settings are persisted on disk in an electron-store file named `ts-webpublish`. The exact location depends on your operating system:
+
+| Platform | Path |
+|----------|------|
+| Windows | `%APPDATA%\ts-webpublish\ts-webpublish.json` |
+| Linux | `~/.config/ts-webpublish/ts-webpublish.json` |
+
+You can edit this file directly to reset individual values, but doing so while WebPublish is running may cause your changes to be overwritten. Close the application first.
+
+<Warning>
+  Deleting or corrupting the settings file resets all settings to their defaults. Tasks defined in the `tasks` array will also be lost if the file is deleted.
+</Warning>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Server configuration" icon="server" href="/configuration/server">
+    Change the port and IP address WebPublish listens on
+  </Card>
+  <Card title="REST API configuration" icon="code" href="/configuration/api">
+    Enable and configure the built-in REST API
+  </Card>
+</CardGroup>

@@ -1,0 +1,103 @@
+---
+title: "Proxy task"
+description: "Forward HTTP requests through WebPublish to a remote target URL, with automatic CORS headers."
+---
+
+A proxy task forwards incoming HTTP requests to a remote server and relays the response back to the client. From the perspective of the requesting application, the remote content appears to come from `127.0.0.1:9090`, not from the original server.
+
+WebPublish adds CORS headers to every proxied response, making proxy tasks particularly useful for web development workflows where the browser would otherwise block cross-origin requests.
+
+## How it works
+
+When a request arrives at `http://127.0.0.1:9090/{taskId}/{path}`, WebPublish strips the task ID prefix and forwards the request to `{target}/{path}`, where `{target}` is the remote URL you configured. The remote response — including status code, headers, and body — is relayed back to the client.
+
+```
+Client → http://127.0.0.1:9090/{taskId}/{path}
+       ↓ (forwarded by WebPublish)
+       → {target}/{path}
+       ↑ (response relayed back)
+Client ← response from remote server
+```
+
+## URL format
+
+```
+http://127.0.0.1:9090/{taskId}/{path}
+```
+
+For example, if the task ID is `tiles` and the target is `https://tile.openstreetmap.org`, then:
+
+```
+http://127.0.0.1:9090/tiles/15/16352/10861.png
+  → forwards to →
+https://tile.openstreetmap.org/15/16352/10861.png
+```
+
+## Creating a proxy task
+
+<Steps>
+  <Step title="Open the new task dialog">
+    Click **Add** (or **+**) in the toolbar.
+  </Step>
+  <Step title="Select the Proxy type">
+    In the **Type** field, choose **Proxy**.
+  </Step>
+  <Step title="Enter the target URL">
+    In the **Path** field, enter the full URL of the remote server you want to proxy to, for example `https://api.example.com` or `http://192.168.1.50:8080`.
+
+    <Note>
+      The **Path** field stores the target URL for proxy tasks — not a local file path. Include the scheme (`http://` or `https://`) but do not include a trailing slash.
+    </Note>
+  </Step>
+  <Step title="Set the task ID and name">
+    Enter a short **ID** for the local URL (for example, `remote-api`). Requests to `http://127.0.0.1:9090/remote-api/anything` will be proxied to `{target}/anything`.
+  </Step>
+  <Step title="Save and start">
+    Click **OK** to save the task, then click **Start** to enable it.
+  </Step>
+</Steps>
+
+## Use cases
+
+### Bypass CORS in development
+
+Browsers block requests to a different origin than the page's own origin. A proxy task moves the request to the same origin as your development server:
+
+```javascript
+// Instead of this (blocked by CORS):
+fetch('https://remote-api.example.com/data')
+
+// Do this (routed through WebPublish):
+fetch('http://127.0.0.1:9090/remote-api/data')
+```
+
+### Access remote tile services locally
+
+Point a mapping client at a local proxy URL to work with remote tile endpoints:
+
+```javascript
+L.tileLayer('http://127.0.0.1:9090/osm/{z}/{x}/{y}.png').addTo(map);
+// Proxies to the configured remote tile server
+```
+
+### Consolidate multiple upstream services
+
+Create one proxy task per upstream service, each with a different ID. Your client application talks only to `127.0.0.1:9090` and WebPublish routes to the appropriate backend.
+
+## CORS headers
+
+WebPublish automatically adds CORS headers to every proxied response. This allows browser applications running on any origin to make requests through the proxy without encountering CORS errors.
+
+<Tip>
+  If the remote server already sets `Access-Control-Allow-Origin` headers, WebPublish's proxy may override them. This is generally desirable in development, but be aware of it when connecting to services that use CORS restrictions for security.
+</Tip>
+
+## Data usage tracking
+
+The proxy task increments its **Data used** counter by one for each request forwarded (not by byte count). This provides a request count rather than a byte-accurate usage measurement.
+
+Set a **Data limit** to cap the number of requests the proxy task will forward before it stops accepting new connections.
+
+<Warning>
+  The proxy task does not validate or authenticate requests before forwarding them. Do not expose a proxy task on a public network interface if the target URL requires protected access or contains sensitive data.
+</Warning>

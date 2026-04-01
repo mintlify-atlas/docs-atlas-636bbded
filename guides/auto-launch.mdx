@@ -1,0 +1,52 @@
+---
+title: "Auto-launch"
+description: "Configure WebPublish to start automatically when your operating system starts up."
+---
+
+Auto-launch starts WebPublish when you log in to your operating system. This is useful if you want WebPublish to be available as soon as you sit down to work, without having to open it manually each time.
+
+## How it works
+
+When auto-launch is enabled, WebPublish registers itself with the operating system's login item mechanism using Electron's `app.setLoginItemSettings()`. On the next login, the OS launches WebPublish automatically.
+
+On Windows and Linux, the application starts minimized to the system tray — the main window does not open on screen. You can bring up the window at any time by clicking the WebPublish icon in the tray.
+
+## Enabling auto-launch
+
+<Steps>
+  <Step title="Open Settings">
+    Click **Settings** in the toolbar or system-tray menu.
+  </Step>
+  <Step title="Find the startup option">
+    Under the **Basic** section, look for **Open at Login**.
+  </Step>
+  <Step title="Enable the toggle">
+    Switch **Open at Login** to the on position.
+  </Step>
+  <Step title="Save">
+    Click **Save & Apply**. WebPublish will be registered as a login item immediately.
+  </Step>
+</Steps>
+
+## Disabling auto-launch
+
+Follow the same steps above and switch **Open at Login** to the off position, then click **Save & Apply**.
+
+<Note>
+  If you remove WebPublish from your OS startup manager (for example, from Task Manager on Windows or System Settings on macOS) without using the in-app setting, WebPublish detects the change and updates the **Open at Login** toggle to reflect the current state.
+</Note>
+
+<Warning>
+  On some systems, removing the application from the OS startup manager does not automatically update the setting inside WebPublish. If the toggle shows as enabled but WebPublish is not launching at login, open **Settings**, disable the toggle, save, then re-enable it and save again to re-register the login item.
+</Warning>
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Settings" icon="gear" href="/configuration/settings">
+    Full reference for all user-facing settings including Open at Login
+  </Card>
+  <Card title="Language and localization" icon="globe" href="/guides/multilingual">
+    Switch the WebPublish interface language
+  </Card>
+</CardGroup>

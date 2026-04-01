@@ -1,0 +1,66 @@
+---
+title: "Introduction"
+description: "WebPublish — instantly publish folders, files, MBTiles, and proxy endpoints over HTTP from your desktop."
+---
+
+WebPublish is a cross-platform desktop application built with Electron that lets you serve local content over HTTP in seconds — no web server configuration required. Whether you need to share a folder of static files, expose a map tile dataset, or forward requests to a remote URL, WebPublish handles it with a single click.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download and install WebPublish on Windows or Linux
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Create your first publishing task in under a minute
+  </Card>
+  <Card title="Publishing Tasks" icon="server" href="/tasks/overview">
+    Learn about all supported task types
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/overview">
+    Automate WebPublish with the built-in REST API
+  </Card>
+</CardGroup>
+
+## What you can publish
+
+<CardGroup cols={2}>
+  <Card title="Directories" icon="folder-open" href="/tasks/directory">
+    Serve an entire folder as a browsable static website
+  </Card>
+  <Card title="Single Files" icon="file" href="/tasks/file">
+    Share any individual file over HTTP instantly
+  </Card>
+  <Card title="MBTiles" icon="map" href="/tasks/mbtiles">
+    Host map tile datasets with raster PNG and vector PBF support
+  </Card>
+  <Card title="Proxy" icon="arrow-right-arrow-left" href="/tasks/proxy">
+    Forward HTTP requests to any remote URL
+  </Card>
+  <Card title="CLT (CesiumLab)" icon="globe" href="/tasks/clt">
+    Serve CesiumLab tileset packages directly
+  </Card>
+</CardGroup>
+
+## Key capabilities
+
+- **Zero-configuration serving** — pick a file or folder, click start, get a URL
+- **MBTiles tile server** — full support for raster (PNG) and vector (PBF) tiles with interactive map preview
+- **HTTP proxy** — route local requests to remote endpoints for development and testing
+- **Gzip compression** — reduce bandwidth with per-task compression settings
+- **CORS headers** — cross-origin access enabled by default for all tasks
+- **Traffic tracking** — monitor data usage and set per-task limits
+- **REST API** — programmatically manage tasks from external tools
+- **System tray** — runs quietly in the background with auto-launch on login
+- **Multi-language** — Simplified Chinese, Traditional Chinese, and English UI
+- **Auto-update** — keeps itself current automatically
+
+## Supported platforms
+
+| Platform | Status |
+|----------|--------|
+| Windows  | Supported |
+| Linux    | Supported (deb / AppImage) |
+| macOS    | Community build |
+
+<Note>
+  WebPublish requires Node.js 12.21 or later to build from source. Pre-built installers have no external dependencies.
+</Note>

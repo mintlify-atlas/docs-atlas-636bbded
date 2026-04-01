@@ -1,0 +1,87 @@
+{
+  "projectType": "saas",
+  "projectName": "WebPublish",
+  "projectDescription": "A cross-platform Electron desktop app that lets you instantly publish local folders, files, MBTiles map data, and proxy endpoints over HTTP with zero configuration.",
+  "theme": "palm",
+  "primaryColor": "#4A90D9",
+  "lightColor": "#EBF4FF",
+  "darkColor": "#1A3A5C",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Publishing Tasks",
+            "pages": [
+              "tasks/overview",
+              "tasks/directory",
+              "tasks/file",
+              "tasks/mbtiles",
+              "tasks/proxy",
+              "tasks/clt"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/settings",
+              "configuration/server",
+              "configuration/api"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/gzip",
+              "guides/cors",
+              "guides/map-preview",
+              "guides/multilingual",
+              "guides/auto-launch"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "REST API",
+            "pages": [
+              "api/overview",
+              "api/get-list",
+              "api/add-task"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "One-click publishing of local folders, files, MBTiles, and CLT datasets over HTTP",
+    "Built-in proxy server for forwarding requests to remote URLs",
+    "MBTiles tile server with MapBox and OpenLayers preview support (raster PNG and vector PBF)",
+    "Configurable port, IP binding, CORS headers, and gzip compression per task",
+    "REST API for programmatic task management",
+    "System tray integration, auto-launch on login, and auto-update",
+    "Multi-language UI (Simplified Chinese, Traditional Chinese, English)",
+    "Traffic usage tracking and per-task data limit enforcement"
+  ],
+  "publicApiSurface": [
+    "GET /getList — returns all active publishing tasks with their URLs",
+    "GET /addTask?path=<filepath> — adds a new task from a file or directory path",
+    "GET /{taskId}/{z}/{x}/{y}.{format} — MBTiles tile endpoint (PNG / PBF / GeoJSON)",
+    "GET /{taskId}/metadata.json — TileJSON metadata for an MBTiles task",
+    "GET /{taskId}/map-preview — interactive map preview for an MBTiles task",
+    "GET /{taskId}/* — static file or directory serving endpoint",
+    "GET /{taskId}/* (proxy) — proxied request forwarding to remote target"
+  ]
+}

@@ -1,0 +1,107 @@
+---
+title: "Publishing tasks"
+description: "An overview of all five task types in WebPublish, their shared properties, and how to manage them."
+---
+
+A publishing task is a named, persistent configuration that binds a local resource — or a remote target — to a URL path on the WebPublish HTTP server. Each task has a unique path segment (its **ID**) that forms the base of every URL it serves.
+
+## Task types
+
+<CardGroup cols={2}>
+  <Card title="Directory" icon="folder-open" href="/tasks/directory">
+    Serve an entire local folder as a browsable file tree. Clients can navigate the directory listing and download any file.
+  </Card>
+  <Card title="File" icon="file" href="/tasks/file">
+    Serve a single local file over HTTP. Useful for sharing a specific document, binary, or dataset without exposing the surrounding folder.
+  </Card>
+  <Card title="MBTiles" icon="map" href="/tasks/mbtiles">
+    Host an MBTiles tile dataset. Supports raster (PNG) and vector (PBF) tiles, TileJSON metadata, and an interactive map preview.
+  </Card>
+  <Card title="Proxy" icon="arrow-right-arrow-left" href="/tasks/proxy">
+    Forward every incoming request to a remote HTTP target. Useful for bypassing CORS restrictions or accessing a remote tile service from a local URL.
+  </Card>
+  <Card title="CLT (CesiumLab)" icon="globe" href="/tasks/clt">
+    Serve CesiumLab `.clt` tile packages — a SQLite-based format used by CesiumLab tools.
+  </Card>
+</CardGroup>
+
+## How task IDs work in URLs
+
+Every task has an **ID** — a short string you set when creating the task. WebPublish mounts the task at `/{id}` on the server, so every URL it serves begins with that prefix.
+
+```
+http://127.0.0.1:9090/{taskId}/...
+```
+
+For example, a directory task with the ID `my-maps` would be browsed at:
+
+```
+http://127.0.0.1:9090/my-maps/
+```
+
+And a file inside it would be at:
+
+```
+http://127.0.0.1:9090/my-maps/data/cities.geojson
+```
+
+Choose IDs that are short, lowercase, and URL-friendly (letters, numbers, and hyphens work well).
+
+## Common properties
+
+All five task types share the following fields:
+
+| Property | Description |
+|----------|-------------|
+| **Name** | A display label shown in the task list. Does not affect the URL. |
+| **ID** | The URL path segment that prefixes all routes for this task. |
+| **Path** | For local tasks: the file or folder path on disk. For proxy tasks: the target URL. |
+| **Gzip** | Enables gzip (or deflate) compression for responses. Defaults to enabled. |
+| **Data used** | Running total of bytes transferred through this task. |
+| **Data limit** | Optional cap on total data transferred. Set to `0` for unlimited. When the limit is reached, the task rejects further requests with a 500 error until the limit is reset or removed. |
+| **Enable** | Whether the task is currently accepting requests. |
+
+<Note>
+  A task can be enabled only if its underlying resource is accessible. For file and directory tasks, the file or folder must exist and be readable on disk. For MBTiles and CLT tasks, the database file must be openable. Proxy tasks can be enabled at any time because the remote target is not checked until a request arrives.
+</Note>
+
+## Creating a task
+
+<Steps>
+  <Step title="Open the new task dialog">
+    Click the **Add** (or **+**) button in the toolbar. A dialog opens where you configure the task.
+  </Step>
+  <Step title="Select the task type">
+    Choose the type that matches what you want to publish: **Directory**, **File**, **MBTiles**, **Proxy**, or **CLT**.
+  </Step>
+  <Step title="Fill in the task fields">
+    Enter a **Name**, set an **ID**, and provide the **Path** (a local file/folder or a remote URL, depending on the type). Adjust **Gzip** and **Data limit** if needed.
+  </Step>
+  <Step title="Save the task">
+    Click **OK** (or **Confirm**). The task is saved in the list with a stopped status.
+  </Step>
+</Steps>
+
+## Starting and stopping tasks
+
+- **Start** — click the toggle or start button next to a task. The status indicator turns green when the task is active.
+- **Stop** — click the toggle again to pause the task. The task configuration is preserved and the task can be restarted at any time.
+- **Delete** — click the trash icon to permanently remove the task from the list. This does not delete the underlying file or folder.
+
+<Tip>
+  Stopped tasks are remembered across application restarts. Tasks that were enabled when you last closed WebPublish are automatically re-enabled on the next launch.
+</Tip>
+
+## Gzip compression
+
+Gzip is enabled by default for all task types. When a client sends an `Accept-Encoding: gzip` header, WebPublish compresses the response using gzip. If the client only supports deflate, deflate compression is used instead.
+
+You can disable gzip on a per-task basis in the task settings. This is useful for files that are already compressed (for example, `.zip`, `.gz`, or `.mbtiles` archives) where re-compression provides no benefit.
+
+## Data limits
+
+Set a **Data limit** (in bytes) to cap how much data a task can serve in total. Once the limit is reached, WebPublish stops accepting requests for that task and returns an error to the client.
+
+To reset usage, edit the task and clear the **Data used** counter, or raise the **Data limit**.
+
+A limit of `0` means no cap — the task serves data indefinitely.

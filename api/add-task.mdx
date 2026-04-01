@@ -1,0 +1,60 @@
+---
+title: "GET /addTask"
+description: "Add a new publishing task by providing a local file or folder path."
+---
+
+Adds a new task to WebPublish from a local file system path. The task name is derived automatically from the file or folder name.
+
+<Warning>
+  This endpoint is partially implemented in the current release. It constructs the task configuration object but full persistence to the task list requires the WebPublish UI to be open and responsive. Use the UI to create tasks for a reliable experience.
+</Warning>
+
+## Request
+
+```bash
+GET http://127.0.0.1:12110/addTask?path=<absolute-path>
+```
+
+### Query parameters
+
+<ParamField query="path" type="string" required>
+  The absolute local file system path to the file or folder you want to publish. The task name is set to the base filename (without extension).
+</ParamField>
+
+### Example
+
+```bash
+# Publish a folder
+curl "http://127.0.0.1:12110/addTask?path=/home/user/sites/my-app"
+
+# Publish a single file
+curl "http://127.0.0.1:12110/addTask?path=/home/user/data/report.pdf"
+```
+
+## Behaviour
+
+When called with a valid `path`:
+
+1. The path is checked to confirm it exists on disk (`fs.stat`)
+2. The task name is extracted: `path.basename(pathname, path.extname(pathname))`
+3. A UUID is generated as the task's `id`
+4. A task config object is constructed:
+
+```json
+{
+  "id": "<generated UUID>",
+  "path": "/home/user/sites/my-app",
+  "name": "my-app"
+}
+```
+
+<Note>
+  The task type is not set by this endpoint. WebPublish determines the correct type (file, directory, mbtiles, etc.) based on the path when the task is fully initialised through the UI.
+</Note>
+
+## Error responses
+
+| Scenario | Response |
+|----------|----------|
+| `path` parameter missing | No task is created; the endpoint returns without a response body |
+| Path does not exist on disk | `404` with an error message |

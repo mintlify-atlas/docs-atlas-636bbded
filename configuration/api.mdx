@@ -1,0 +1,93 @@
+---
+title: "REST API configuration"
+description: "Enable the WebPublish REST API, configure its port, and learn about the available endpoints."
+---
+
+WebPublish includes a built-in REST API that lets you query and manage publishing tasks programmatically. The API runs as a separate HTTP server on its own port, independent of the main task-serving server.
+
+The API is **disabled by default**. You must enable it explicitly before it accepts any requests.
+
+## Enabling the API
+
+<Steps>
+  <Step title="Open Settings">
+    Click the gear icon in the toolbar, or right-click the system-tray icon and choose **Settings**.
+  </Step>
+  <Step title="Enable the API toggle">
+    In **Settings**, find the **API** or **REST API** section and turn on the **Enable API** toggle.
+  </Step>
+  <Step title="Set the API port (optional)">
+    The default port is `12110`. Change it if that port is already in use on your machine.
+  </Step>
+  <Step title="Save and verify">
+    Click **OK** to save. WebPublish starts the API server. Verify it is running by sending a request to `/getList`:
+
+    ```bash
+    curl http://127.0.0.1:12110/getList
+    ```
+
+    A JSON response containing your task list confirms the API is active.
+  </Step>
+</Steps>
+
+## API server settings
+
+| Setting | Config key | Default | Description |
+|---------|-----------|---------|-------------|
+| **API enabled** | `api-enabled` | `false` | Whether the REST API server is running. |
+| **API port** | `api-port` | `12110` | The TCP port the API server listens on. |
+
+<Note>
+  The API server always binds to `127.0.0.1` (localhost). It is not exposed to the network even if you have changed the main server address to a LAN IP.
+</Note>
+
+## CORS
+
+The API server allows cross-origin requests from any origin. The following headers are set on every response:
+
+| Header | Value |
+|--------|-------|
+| `Access-Control-Allow-Origin` | `*` |
+| `Access-Control-Allow-Methods` | `PUT, POST, GET, DELETE, OPTIONS` |
+| `Access-Control-Allow-Headers` | `*` |
+| `Access-Control-Allow-Private-Network` | `true` |
+
+This means you can call the API from any web page or browser-based tool without CORS errors.
+
+## Available endpoints
+
+<CardGroup cols={2}>
+  <Card title="GET /getList" icon="list" href="/api/get-list">
+    Returns all current publishing tasks, each with its live URL.
+  </Card>
+  <Card title="GET /addTask" icon="plus" href="/api/add-task">
+    Adds a new publishing task by providing a local file path.
+  </Card>
+</CardGroup>
+
+For full parameter and response documentation, see the [API reference overview](/api/overview).
+
+## Security
+
+<Warning>
+  The REST API has no authentication. Any process or user that can reach the API port can read your task list and add new tasks. Only enable the API on trusted networks or when you specifically need programmatic access.
+</Warning>
+
+Because the API always binds to `127.0.0.1`, remote access is blocked by default. If you use port forwarding, a reverse proxy, or a VPN that routes traffic to localhost, be aware that the API will be reachable over those paths without any credential check.
+
+To minimize exposure:
+
+- Enable the API only when you need it, and disable it when you are done.
+- Do not forward the API port through your firewall or router.
+- If you need remote API access, place an authenticating reverse proxy (such as nginx with HTTP basic auth) in front of the API port.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="API reference" icon="book" href="/api/overview">
+    Full endpoint reference for the WebPublish REST API
+  </Card>
+  <Card title="Settings" icon="gear" href="/configuration/settings">
+    All application settings and their default values
+  </Card>
+</CardGroup>

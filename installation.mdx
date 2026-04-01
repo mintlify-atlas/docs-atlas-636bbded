@@ -1,0 +1,130 @@
+---
+title: "Installation"
+description: "Download and install WebPublish on Windows or Linux, or build from source."
+---
+
+WebPublish is distributed as a pre-built installer for Windows and Linux. You can also build it from source if you need a custom setup or want to contribute.
+
+## Pre-built installers
+
+Download the latest release from the [WebPublish releases page](https://github.com/CandyACE/webpublish/releases).
+
+<Tabs>
+  <Tab title="Windows">
+    <Steps>
+      <Step title="Download the installer">
+        Go to the [releases page](https://github.com/CandyACE/webpublish/releases) and download the `.exe` file for the latest version.
+      </Step>
+      <Step title="Run the installer">
+        Double-click the downloaded `.exe` file and follow the on-screen prompts.
+
+        <Note>
+          Windows may show a SmartScreen warning for unsigned applications. Click **More info** then **Run anyway** to proceed.
+        </Note>
+      </Step>
+      <Step title="Launch WebPublish">
+        After installation completes, WebPublish opens automatically. You can also find it in the Start menu or on your desktop.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Linux">
+    Two package formats are available. Choose the one that fits your distribution.
+
+    <Steps>
+      <Step title="Download the package">
+        Go to the [releases page](https://github.com/CandyACE/webpublish/releases) and download either:
+
+        - `.deb` — for Debian, Ubuntu, and compatible distributions
+        - `.AppImage` — for any Linux distribution (no installation required)
+      </Step>
+      <Step title="Install or run the package">
+        <Tabs>
+          <Tab title=".deb">
+            Install the package with `dpkg`:
+
+            ```bash
+            sudo dpkg -i webpublish_*.deb
+            ```
+
+            If you see dependency errors, resolve them with:
+
+            ```bash
+            sudo apt-get install -f
+            ```
+          </Tab>
+          <Tab title=".AppImage">
+            Make the file executable, then run it directly — no installation needed:
+
+            ```bash
+            chmod +x WebPublish-*.AppImage
+            ./WebPublish-*.AppImage
+            ```
+
+            <Tip>
+              Move the AppImage to a permanent location such as `~/Applications/` and create a desktop shortcut for easier access.
+            </Tip>
+          </Tab>
+        </Tabs>
+      </Step>
+      <Step title="Launch WebPublish">
+        Start WebPublish from your application menu or by running the installed binary.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Build from source
+
+Building from source requires Git and Node.js.
+
+### System requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Node.js     | 12.21 or later |
+| npm         | bundled with Node.js |
+| Git         | any recent version |
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/CandyACE/webpublish.git
+    cd webpublish
+    ```
+  </Step>
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+  <Step title="Start in development mode or build a package">
+    To run WebPublish immediately in development mode:
+
+    ```bash
+    npm run dev
+    ```
+
+    To produce a distributable installer for your platform:
+
+    ```bash
+    npm run build
+    ```
+
+    The packaged output is written to the `dist/` directory.
+
+    <Note>
+      `npm run build` targets your current platform by default. Cross-compilation (for example, building a Windows installer on Linux) requires additional tooling and is not covered here.
+    </Note>
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create your first publishing task in under a minute
+  </Card>
+  <Card title="Publishing tasks" icon="server" href="/tasks/overview">
+    Learn about all supported task types
+  </Card>
+</CardGroup>
